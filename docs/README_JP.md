@@ -1,9 +1,11 @@
 # DR_CursorTracker（クロスヘアトラッカー）
 
-### [**[紹介言語:日本語](README_JP.md) | [Language:English](README_EN.md) | [簡介語言:繁體中文](README.md)**]
+### [**紹介言語:日本語 | [Language:English](README_EN.md) | [簡介語言:繁體中文](README.md)**]
 
 DR_CursorTracker は、マウスのクロスヘアと移動軌跡をリアルタイムで可視化する OBS Studio の映像ソース用プラグインです。
 低負荷のリアルタイム描画と状況に応じた設定 UI を提供し、チュートリアル、ゲーム配信、製品・UI デモに最適です。
+
+### [**[設定ガイド](SETTINGS_GUIDE_JP.md)**]
 
 ## 特長
 - クロスヘアモード：移動モード（移動量＋リバウンド）、座標モード（画面上のマウス位置に追従）

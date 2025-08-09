@@ -1,9 +1,11 @@
 # DR_CursorTracker (Crosshair Tracker)
 
-### [**[Language:English](README_EN.md) | [簡介語言:繁體中文](README.md) | [紹介言語:日本語](README_JP.md)**]
+### [**Language:English | [簡介語言:繁體中文](README.md) | [紹介言語:日本語](README_JP.md)**]
 
 DR_CursorTracker is an OBS Studio video source plugin that visualizes the mouse crosshair and movement trail in real time.
 It provides low-overhead rendering and a context-aware settings UI, ideal for tutorials, game streaming, and product/UI demos.
+
+### [**[Settings Guide](SETTINGS_GUIDE_EN.md)**]
 
 ## Highlights
 - Crosshair modes: Movement (delta + rebound), Coordinate (follow screen cursor)
