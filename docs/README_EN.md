@@ -7,6 +7,8 @@ It provides low-overhead rendering and a context-aware settings UI, ideal for tu
 
 ### [**[Settings Guide](SETTINGS_GUIDE_EN.md)**]
 
+![Preview](/images/show_2.jpg)
+
 ## Highlights
 - Crosshair modes: Movement (delta + rebound), Coordinate (follow screen cursor)
 - Tracking modes: Linear (line from center), Path (small circles along the trail)
