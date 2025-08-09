@@ -37,3 +37,6 @@ It provides low-overhead rendering and a context-aware settings UI, ideal for tu
 
 ## License & Credits
 - Copyright © Demon Realm / Godpriest
+
+## AI Assistance
+Portions of this plugin’s code and documentation were assisted by AI. All final content was reviewed and integrated by the author.

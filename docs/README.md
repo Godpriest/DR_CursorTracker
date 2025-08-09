@@ -38,4 +38,7 @@ DR_CursorTracker 是一款 OBS Studio 視訊來源插件，用於在直播與錄
 ## 授權與版權
 - Copyright © Demon Realm / Godpriest
 
+## AI 協助
+本插件的部分程式碼與文件經由 AI 輔助產生與修訂，最終內容均由作者審閱並整合。
+
 
