@@ -16,7 +16,6 @@ It provides low-overhead rendering and a context-aware settings UI, ideal for tu
 - Smart UI: Shows only relevant options based on current selections/modes
 - Motion controls: Rebound speed, center/outer move speeds, sensitivity, idle recenter boost
 - Performance: Pre-generated alpha textures and caching
-- Localization: zh-TW, en-US, ja-JP
 
 ## Use Cases
 - Step-by-step tutorials and mouse trail display
@@ -42,5 +41,6 @@ It provides low-overhead rendering and a context-aware settings UI, ideal for tu
 
 ## AI Assistance
 Portions of this plugin’s code and documentation were assisted by AI. All final content was reviewed and integrated by the author.
+
 
 
