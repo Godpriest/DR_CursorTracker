@@ -4,7 +4,7 @@ project(DR_CursorTracker)
 # 設定版本號
 set(MAJOR_VERSION 1)
 set(MINOR_VERSION 0)
-set(PATCH_VERSION 2)
+set(PATCH_VERSION 1)
 
 set(DR_CURSOR_TRACKER_SOURCES
     dr_cursor_tracker.c

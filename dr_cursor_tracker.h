@@ -43,7 +43,6 @@ struct dr_cursor_tracker_data {
     int circle_thickness;
     float circle_alpha; // 圓圈透明度
     int circle_radius; // 圓圈半徑
-    float recenter_speed;
     float recenter_speed_center; // 中心回彈速度比例 (0.0 = 0%, 20.0 = 2000%)
     float recenter_speed_edge;   // 外圍回彈速度比例 (0.0 = 0%, 20.0 = 2000%)
     float crosshair_move_speed_center; // 準心中心移速 (0.0 = 0%, 20.0 = 2000%)

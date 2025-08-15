@@ -148,7 +148,6 @@ static void *crosshair_box_create(obs_data_t *settings, obs_source_t *source)
     data->circle_alpha = (float)obs_data_get_double(settings, "circle_alpha");
     data->circle_radius = (int)obs_data_get_int(settings, "circle_radius");
     
-    data->recenter_speed = (float)obs_data_get_double(settings, "recenter_speed");
     data->recenter_speed_center = (float)obs_data_get_double(settings, "recenter_speed_center");
     data->recenter_speed_edge = (float)obs_data_get_double(settings, "recenter_speed_edge");
     data->crosshair_move_speed_center = (float)obs_data_get_double(settings, "crosshair_move_speed_center");
@@ -331,7 +330,6 @@ static void crosshair_box_update(void *data, obs_data_t *settings)
         d->path_alpha_color_cache = d->path_circle_color;
     }
     
-    d->recenter_speed = (float)obs_data_get_double(settings, "recenter_speed");
     d->recenter_speed_center = (float)obs_data_get_double(settings, "recenter_speed_center");
     d->recenter_speed_edge = (float)obs_data_get_double(settings, "recenter_speed_edge");
     d->crosshair_move_speed_center = (float)obs_data_get_double(settings, "crosshair_move_speed_center");
@@ -795,18 +793,26 @@ static void crosshair_box_render(void *data, gs_effect_t *effect)
             // 設置顏色和透明度
             set_effect_color(effect, d->tracking_line_color, d->tracking_line_alpha);
             
-            // 繪製線條
-            gs_matrix_push();
-            gs_matrix_translate3f(center_x, center_y, 0.0f);
-            gs_matrix_rotaa4f(0.0f, 0.0f, 1.0f, angle);
-            // 使用線條的中心點作為原點，確保線條的中心線對準準心中心
-            gs_matrix_translate3f(-(float)d->tracking_line_thickness / 2.0f, -(float)d->tracking_line_thickness / 2.0f, 0.0f);
-            // 延長線條長度，確保完全覆蓋到準心中心
-            gs_draw_sprite(NULL, 0, (uint32_t)(length + d->tracking_line_thickness), d->tracking_line_thickness);
-            gs_matrix_pop();
-            
-            gs_technique_end_pass(tech);
-            gs_technique_end(tech);
+                    // 啟用標準 alpha 混合，確保線條透明度正確
+        gs_blend_state_push();
+        gs_blend_function(GS_BLEND_SRCALPHA, GS_BLEND_INVSRCALPHA);
+        gs_enable_color(true, true, true, true);
+        
+        // 繪製線條
+        gs_matrix_push();
+        gs_matrix_translate3f(center_x, center_y, 0.0f);
+        gs_matrix_rotaa4f(0.0f, 0.0f, 1.0f, angle);
+        // 使用線條的中心點作為原點，確保線條的中心線對準準心中心
+        gs_matrix_translate3f(-(float)d->tracking_line_thickness / 2.0f, -(float)d->tracking_line_thickness / 2.0f, 0.0f);
+        // 延長線條長度，確保完全覆蓋到準心中心
+        gs_draw_sprite(NULL, 0, (uint32_t)(length + d->tracking_line_thickness), d->tracking_line_thickness);
+        gs_matrix_pop();
+        
+        gs_technique_end_pass(tech);
+        gs_technique_end(tech);
+        
+        // 恢復混合狀態
+        gs_blend_state_pop();
         } else if (d->tracking_line_mode == TRACKING_MODE_PATH) {
             // 路徑模式：繪製路徑點
             if (d->path_head && d->path_point_count > 0) {
@@ -914,6 +920,11 @@ static void crosshair_box_render(void *data, gs_effect_t *effect)
         }
         
         if (d->circle_texture) {
+            // 啟用標準 alpha 混合，確保圓圈透明度正確
+            gs_blend_state_push();
+            gs_blend_function(GS_BLEND_SRCALPHA, GS_BLEND_INVSRCALPHA);
+            gs_enable_color(true, true, true, true);
+            
             gs_effect_t *effect = obs_get_base_effect(OBS_EFFECT_DEFAULT);
             gs_technique_t *tech = gs_effect_get_technique(effect, "Draw");
             gs_effect_set_texture(gs_effect_get_param_by_name(effect, "image"), d->circle_texture);
@@ -944,6 +955,9 @@ static void crosshair_box_render(void *data, gs_effect_t *effect)
             
             gs_technique_end_pass(tech);
             gs_technique_end(tech);
+            
+            // 恢復混合狀態
+            gs_blend_state_pop();
         }
     }
     
@@ -951,6 +965,11 @@ static void crosshair_box_render(void *data, gs_effect_t *effect)
     if (!d->show_default_crosshair && d->crosshair_alpha > 0.0f) {
         gs_effect_t *effect = obs_get_base_effect(OBS_EFFECT_SOLID);
         gs_technique_t *tech = gs_effect_get_technique(effect, "Solid");
+        
+        // 啟用標準 alpha 混合，確保準心透明度正確
+        gs_blend_state_push();
+        gs_blend_function(GS_BLEND_SRCALPHA, GS_BLEND_INVSRCALPHA);
+        gs_enable_color(true, true, true, true);
         
         gs_technique_begin(tech);
         gs_technique_begin_pass(tech, 0);
@@ -984,6 +1003,9 @@ static void crosshair_box_render(void *data, gs_effect_t *effect)
         
         gs_technique_end_pass(tech);
         gs_technique_end(tech);
+        
+        // 恢復混合狀態
+        gs_blend_state_pop();
     }
     
 
@@ -1051,6 +1073,11 @@ static void crosshair_box_render(void *data, gs_effect_t *effect)
         gs_effect_t *effect = obs_get_base_effect(OBS_EFFECT_SOLID);
         gs_technique_t *tech = gs_effect_get_technique(effect, "Solid");
         
+        // 啟用標準 alpha 混合，確保方框透明度正確
+        gs_blend_state_push();
+        gs_blend_function(GS_BLEND_SRCALPHA, GS_BLEND_INVSRCALPHA);
+        gs_enable_color(true, true, true, true);
+        
         gs_technique_begin(tech);
         gs_technique_begin_pass(tech, 0);
         
@@ -1080,6 +1107,9 @@ static void crosshair_box_render(void *data, gs_effect_t *effect)
         
         gs_technique_end_pass(tech);
         gs_technique_end(tech);
+        
+        // 恢復混合狀態
+        gs_blend_state_pop();
     }
 }
 
@@ -1186,20 +1216,51 @@ static bool crosshair_properties_modified(obs_properties_t *props, obs_property_
         obs_property_set_visible(path_generation_interval_prop, show_path_settings);
     }
     
-    // 根據 enable_idle_recenter 的狀態來顯示/隱藏靜止回彈加速相關屬性
-    bool enable_idle_recenter = obs_data_get_bool(settings, "enable_idle_recenter");
+    // 根據準心模式來顯示/隱藏速度設定群組
+    int crosshair_mode = (int)obs_data_get_int(settings, "crosshair_mode");
+    bool show_speed_settings = (crosshair_mode == MODE_MOVEMENT); // 只有在移動模式下才顯示速度設定
+    
+    // 獲取速度設定群組中的所有屬性
+    obs_property_t *recenter_speed_center_prop = obs_properties_get(props, "recenter_speed_center");
+    obs_property_t *recenter_speed_edge_prop = obs_properties_get(props, "recenter_speed_edge");
+    obs_property_t *sensitivity_prop = obs_properties_get(props, "sensitivity");
+    obs_property_t *crosshair_move_speed_center_prop = obs_properties_get(props, "crosshair_move_speed_center");
+    obs_property_t *crosshair_move_speed_edge_prop = obs_properties_get(props, "crosshair_move_speed_edge");
+    obs_property_t *enable_idle_recenter_prop = obs_properties_get(props, "enable_idle_recenter");
     obs_property_t *idle_recenter_delay_prop = obs_properties_get(props, "idle_recenter_delay");
     obs_property_t *idle_recenter_time_prop = obs_properties_get(props, "idle_recenter_time");
     obs_property_t *idle_recenter_boost_prop = obs_properties_get(props, "idle_recenter_boost");
     
+    // 根據準心模式設定所有速度相關屬性的可見性
+    if (recenter_speed_center_prop) {
+        obs_property_set_visible(recenter_speed_center_prop, show_speed_settings);
+    }
+    if (recenter_speed_edge_prop) {
+        obs_property_set_visible(recenter_speed_edge_prop, show_speed_settings);
+    }
+    if (sensitivity_prop) {
+        obs_property_set_visible(sensitivity_prop, show_speed_settings);
+    }
+    if (crosshair_move_speed_center_prop) {
+        obs_property_set_visible(crosshair_move_speed_center_prop, show_speed_settings);
+    }
+    if (crosshair_move_speed_edge_prop) {
+        obs_property_set_visible(crosshair_move_speed_edge_prop, show_speed_settings);
+    }
+    if (enable_idle_recenter_prop) {
+        obs_property_set_visible(enable_idle_recenter_prop, show_speed_settings);
+    }
+    
+    // 靜止回彈加速相關屬性（只有在移動模式且啟用靜止回彈時才顯示）
+    bool show_idle_settings = show_speed_settings && obs_data_get_bool(settings, "enable_idle_recenter");
     if (idle_recenter_delay_prop) {
-        obs_property_set_visible(idle_recenter_delay_prop, enable_idle_recenter);
+        obs_property_set_visible(idle_recenter_delay_prop, show_idle_settings);
     }
     if (idle_recenter_time_prop) {
-        obs_property_set_visible(idle_recenter_time_prop, enable_idle_recenter);
+        obs_property_set_visible(idle_recenter_time_prop, show_idle_settings);
     }
     if (idle_recenter_boost_prop) {
-        obs_property_set_visible(idle_recenter_boost_prop, enable_idle_recenter);
+        obs_property_set_visible(idle_recenter_boost_prop, show_idle_settings);
     }
     
     return true;
@@ -1227,6 +1288,7 @@ static obs_properties_t *crosshair_box_properties(void *data)
         obs_module_text("CrosshairMode"), OBS_COMBO_TYPE_LIST, OBS_COMBO_FORMAT_INT);
     obs_property_list_add_int(mode_list, obs_module_text("MovementMode"), MODE_MOVEMENT);
     obs_property_list_add_int(mode_list, obs_module_text("CoordinateMode"), MODE_COORDINATE);
+    obs_property_set_modified_callback(mode_list, crosshair_properties_modified);
     
     obs_properties_add_int(crosshair_group, "max_offset", obs_module_text("MaxOffset"), 10, 500, 1);
     
@@ -1279,7 +1341,6 @@ static obs_properties_t *crosshair_box_properties(void *data)
     
     // 速度設定群組
     obs_properties_t *speed_group = obs_properties_create();
-    obs_properties_add_float_slider(speed_group, "recenter_speed", obs_module_text("ReboundSpeed"), 0.0, 10.0, 0.1);
     obs_properties_add_float_slider(speed_group, "recenter_speed_center", obs_module_text("CenterReboundSpeed"), 0.0, 20.0, 0.01);
     obs_properties_add_float_slider(speed_group, "recenter_speed_edge", obs_module_text("OuterReboundSpeed"), 0.0, 20.0, 0.01);
     obs_properties_add_float_slider(speed_group, "sensitivity", obs_module_text("CrosshairSensitivity"), 0.01, 10.0, 0.01);
@@ -1345,7 +1406,6 @@ static void crosshair_box_defaults(obs_data_t *settings)
     obs_data_set_default_double(settings, "path_generation_interval", 20.0); // 距離間隔：20像素
     obs_data_set_default_double(settings, "path_lifetime", 2.0);
     
-    obs_data_set_default_double(settings, "recenter_speed", 5.0);
     obs_data_set_default_double(settings, "recenter_speed_center", 0.75);
     obs_data_set_default_double(settings, "recenter_speed_edge", 1.50);
     obs_data_set_default_double(settings, "crosshair_move_speed_center", 1.0);
