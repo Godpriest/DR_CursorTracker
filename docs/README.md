@@ -26,7 +26,7 @@ DR_CursorTracker 是一款 OBS Studio 視訊來源插件，用於在直播與錄
 1. 下載或解壓縮本插件的壓縮檔（內含 `data/` 與 `obs-plugins/` 兩個資料夾）。
 2. 將這兩個資料夾直接覆蓋到「OBS Studio 安裝根目錄」。
    - 範例：`C:/Program Files/obs-studio/`
-3. 重新啟動 OBS，於「新增來源」列表選擇「準心追蹤器 / Crosshair Tracker」。
+3. 重新啟動 OBS，於「新增來源」列表選擇「DR 準心追蹤器 / DR Crosshair Tracker」。
 
 > 平台：Windows（OBS Studio x64）
 
@@ -41,6 +41,7 @@ DR_CursorTracker 是一款 OBS Studio 視訊來源插件，用於在直播與錄
 
 ## AI 協助
 本插件的部分程式碼與文件經由 AI 輔助產生與修訂，最終內容均由作者審閱並整合。
+
 
 
 
