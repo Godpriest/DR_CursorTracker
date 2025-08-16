@@ -1,8 +1,8 @@
 # DR_CursorTracker（準心追蹤器）
 
-### [**簡介語言:繁體中文 | [Language:English](README_EN.md)**]
+![展示圖片](/images/DR_CursorTracker_title_pic.jpg)
 
-![展示圖片](/images/show_2.jpg)
+### [**簡介語言:繁體中文 | [Language:English](README_EN.md)**]
 
 DR_CursorTracker 是一款 OBS Studio 視訊來源插件，用於在直播與錄製中即時可視化滑鼠準心與移動軌跡。
 提供低負載即時渲染與智慧化設定介面，適合教學示範、遊戲直播、產品操作展示與瞄準訓練等情境。
@@ -41,6 +41,7 @@ DR_CursorTracker 是一款 OBS Studio 視訊來源插件，用於在直播與錄
 
 ## AI 協助
 本插件的部分程式碼與文件經由 AI 輔助產生與修訂，最終內容均由作者審閱並整合。
+
 
 
 
