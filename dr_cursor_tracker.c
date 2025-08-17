@@ -396,6 +396,16 @@ static void crosshair_box_tick(void *data, float seconds)
             float max_distance = (float)d->max_offset;
             float normalized_distance = (max_distance > 0.0f) ? distance_from_center / max_distance : 0.0f;
             if (normalized_distance > 1.0f) normalized_distance = 1.0f;
+
+            // 讀取「靜止回彈瞬間歸零」設定（不修改結構，直接從來源設定讀取）
+            bool idle_instant_zero = false;
+            if (d->source) {
+                obs_data_t *settings = obs_source_get_settings(d->source);
+                if (settings) {
+                    idle_instant_zero = obs_data_get_bool(settings, "idle_recenter_instant_zero");
+                    obs_data_release(settings);
+                }
+            }
             
                     // 檢測滑鼠是否移動
         if (dx != 0 || dy != 0) {
@@ -419,29 +429,32 @@ static void crosshair_box_tick(void *data, float seconds)
         float current_boost = 0.0f;
         float progress = 0.0f;
 
-        // 處理靜止回彈加速
+        // 處理靜止回彈邏輯
         if (d->enable_idle_recenter && !d->is_mouse_moving) {
             // 增加靜止時間
             d->current_idle_time += seconds;
 
-            // 檢查是否已經超過延遲時間（修正延遲判斷）
-            if (d->idle_recenter_delay == 0.0f || d->current_idle_time >= d->idle_recenter_delay) {
-                // 計算加速進度
+            bool delay_passed = (d->idle_recenter_delay == 0.0f) || (d->current_idle_time >= d->idle_recenter_delay);
+
+            if (idle_instant_zero && delay_passed) {
+                // 勾選「靜止回彈瞬間歸零」後，達到延遲即瞬間歸零
+                d->offset_x = 0.0f;
+                d->offset_y = 0.0f;
+                d->current_recenter_speed = 0.0f;
+                progress = 0.0f;
+                current_boost = 0.0f;
+            } else if (delay_passed) {
+                // 原本的加速度回彈機制
                 float acceleration_time = d->current_idle_time - d->idle_recenter_delay;
-                
                 if (d->idle_recenter_time > 0.0f) {
-                    // 計算基本進度
                     progress = acceleration_time / d->idle_recenter_time;
                     if (progress > 1.0f) progress = 1.0f;
                 } else {
-                    // 如果加速時間為0，直接使用最大進度
                     progress = 1.0f;
                 }
-
-                // 加速值 = 目標加速值 * 進度
                 current_boost = d->idle_recenter_boost * progress;
             } else {
-                // 仍在延遲中
+                // 尚未到達延遲，無動作
             }
         } else {
             // 移動時重置靜止時間
@@ -1262,6 +1275,22 @@ static bool crosshair_properties_modified(obs_properties_t *props, obs_property_
     if (idle_recenter_boost_prop) {
         obs_property_set_visible(idle_recenter_boost_prop, show_idle_settings);
     }
+    // 新增：靜止回彈瞬間歸零
+    obs_property_t *idle_recenter_instant_zero_prop = obs_properties_get(props, "idle_recenter_instant_zero");
+    if (idle_recenter_instant_zero_prop) {
+        obs_property_set_visible(idle_recenter_instant_zero_prop, show_idle_settings);
+    }
+
+    // 若勾選「靜止回彈瞬間歸零」，隱藏加速時間與速度增加值
+    if (show_idle_settings) {
+        bool instant_zero = obs_data_get_bool(settings, "idle_recenter_instant_zero");
+        if (idle_recenter_time_prop) {
+            obs_property_set_visible(idle_recenter_time_prop, show_idle_settings && !instant_zero);
+        }
+        if (idle_recenter_boost_prop) {
+            obs_property_set_visible(idle_recenter_boost_prop, show_idle_settings && !instant_zero);
+        }
+    }
     
     return true;
 }
@@ -1348,9 +1377,12 @@ static obs_properties_t *crosshair_box_properties(void *data)
     obs_properties_add_float_slider(speed_group, "crosshair_move_speed_edge", obs_module_text("CrosshairOuterMoveSpeed"), 0.0, 20.0, 0.01);
     obs_property_t *enable_idle_recenter_prop = obs_properties_add_bool(speed_group, "enable_idle_recenter", obs_module_text("EnableIdleRecenter"));
     obs_property_set_modified_callback(enable_idle_recenter_prop, crosshair_properties_modified);
-    obs_properties_add_float_slider(speed_group, "idle_recenter_delay", obs_module_text("IdleRecenterDelay"), 0.0, 2.0, 0.1);
+    obs_properties_add_float_slider(speed_group, "idle_recenter_delay", obs_module_text("IdleRecenterDelay"), 0.0, 2.0, 0.01);
+    // 新增：靜止回彈瞬間歸零（顯示於「靜止延遲時間」下方）
+    obs_property_t *idle_recenter_instant_zero_prop_add = obs_properties_add_bool(speed_group, "idle_recenter_instant_zero", obs_module_text("IdleRecenterInstantZero"));
+    obs_property_set_modified_callback(idle_recenter_instant_zero_prop_add, crosshair_properties_modified);
     obs_properties_add_float_slider(speed_group, "idle_recenter_time", obs_module_text("IdleRecenterTime"), 0.1, 5.0, 0.1);
-    obs_properties_add_float_slider(speed_group, "idle_recenter_boost", obs_module_text("IdleRecenterBoost"), 0.0, 10.0, 0.01);
+    obs_properties_add_float_slider(speed_group, "idle_recenter_boost", obs_module_text("IdleRecenterBoost"), 0.0, 100.0, 0.01);
     obs_properties_add_group(props, "speed_settings", obs_module_text("SpeedSettings"), OBS_GROUP_NORMAL, speed_group);
     
     // 初始化屬性可見性
@@ -1415,6 +1447,8 @@ static void crosshair_box_defaults(obs_data_t *settings)
     obs_data_set_default_double(settings, "idle_recenter_delay", 0.10);
     obs_data_set_default_double(settings, "idle_recenter_time", 2.0);
     obs_data_set_default_double(settings, "idle_recenter_boost", 10.0);
+    // 新增：靜止回彈瞬間歸零（預設不啟用）
+    obs_data_set_default_bool(settings, "idle_recenter_instant_zero", false);
 }
 
 struct obs_source_info dr_cursor_tracker_info = {
